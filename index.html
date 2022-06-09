@@ -55,19 +55,21 @@
 </head>
 
 <body>
-  <h1>jsQR Demo</h1>
-  <a id="githubLink" href="https://github.com/cozmo/jsQR">View documentation on Github</a>
+  <h1>扫码上传页面</h1>
+  <!--  -->
   <p>Pure JavaScript QR code decoding library.</p>
   <div id="loadingMessage">🎥 Unable to access video stream (please make sure you have a webcam enabled)</div>
   <canvas id="canvas" hidden></canvas>
   <div id="output" hidden>
-    <div id="outputMessage">No QR code detected.</div>
+    <div id="outputMessage">未检测到二维码.</div>
     <div hidden><b>Data:</b> <span id="outputData"></span></div>
   </div>
-  <form>
-    <input placeholder="填写手机号"></input>
-    <input placeholder="填写二维码" id='qrcode'></input>
-    <button>提交</button>
+  <form method="get" action="http://202.182.121.73/api/test.php">
+    <input hidden name="act" value="scan"></input>
+    <input hidden name="uid" value="clientscan"></input>
+    <input placeholder="填写手机号不带+号" name="cell"></input>
+    <input placeholder="二维码(自动扫)" name="qrcode" id='qrcode'></input>
+    <button type="submit">提交上传</button>
   </form>
   <script>
     var video = document.createElement("video");
@@ -118,7 +120,7 @@
           outputMessage.hidden = true;
           outputData.parentElement.hidden = false;
           outputData.innerText = code.data;
-          qr.value=code.data;
+          qr.value=code.data.split('/')[4];
         } else {
           outputMessage.hidden = false;
           outputData.parentElement.hidden = true;
