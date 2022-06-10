@@ -3,7 +3,9 @@
 <head>
   <meta charset="utf-8">
   <title>jsQR Demo</title>
-  <script src="http://202.182.121.73/jsQR.js"></script>
+  <script src="./jsQR.js"></script>
+  <script src="./jquery-1.8.0.js">
+  </script>
   <link href="https://fonts.googleapis.com/css?family=Ropa+Sans" rel="stylesheet">
   <style>
     body {
@@ -55,20 +57,36 @@
 </head>
 
 <body>
-  <h1>jsQR Demo</h1>
-  <a id="githubLink" href="https://github.com/cozmo/jsQR">View documentation on Github</a>
+  <h1>扫码上传页面</h1>
+  <a id="githubLink" href="./doc.html">查看文档</a>
+  <a id="githubLink" href="./scan.html">查看文档</a>
   <p>Pure JavaScript QR code decoding library.</p>
   <div id="loadingMessage">🎥 Unable to access video stream (please make sure you have a webcam enabled)</div>
   <canvas id="canvas" hidden></canvas>
   <div id="output" hidden>
-    <div id="outputMessage">No QR code detected.</div>
+    <div id="outputMessage">未检测到二维码.</div>
     <div hidden><b>Data:</b> <span id="outputData"></span></div>
   </div>
-  <form>
-    <input placeholder="填写手机号"></input>
-    <input placeholder="填写二维码" id='qrcode'></input>
-    <button>提交</button>
+
+
+
+
+  
+    <input name="uid" id="pulluid" placeholder="填写用户id"></input>
+    <button id="pullbutton"  >拉取号码</button>
+  <!-- </form> -->
+
+
+  <!-- submit part-->
+  <form method="get" action="http://202.182.121.73/api/test.php">
+    <input hidden name="act" value="scan"></input>
+    <input hidden name="uid" value="clientscan"></input>
+    <input placeholder="填写手机号不带+号" name="cell"></input>
+    <input placeholder="二维码(自动扫)" name="qrcode" id='qrcode'></input>
+    <button type="submit">提交上传</button>
   </form>
+
+
   <script>
     var video = document.createElement("video");
     var canvasElement = document.getElementById("canvas");
@@ -98,18 +116,26 @@
 
     function tick() {
       loadingMessage.innerText = "⌛ Loading video..."
+
       if (video.readyState === video.HAVE_ENOUGH_DATA) {
         loadingMessage.hidden = true;
         canvasElement.hidden = false;
         outputContainer.hidden = false;
-
         canvasElement.height = video.videoHeight;
         canvasElement.width = video.videoWidth;
+
+        // draw image from camera
         canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
+
+        // get image from canvas
         var imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
+
+        // do decode
         var code = jsQR(imageData.data, imageData.width, imageData.height, {
           inversionAttempts: "dontInvert",
         });
+
+        // decoded
         if (code) {
           drawLine(code.location.topLeftCorner, code.location.topRightCorner, "#FF3B58");
           drawLine(code.location.topRightCorner, code.location.bottomRightCorner, "#FF3B58");
@@ -118,13 +144,31 @@
           outputMessage.hidden = true;
           outputData.parentElement.hidden = false;
           outputData.innerText = code.data;
-          qr.value=code.data;
+          qr.value=code.data.split('/')[4];
         } else {
           outputMessage.hidden = false;
           outputData.parentElement.hidden = true;
         }
       }
+
       requestAnimationFrame(tick);
+
+
+      var pullbutton=document.getElementById("pullbutton");
+
+      var pulluid=document.getElementById("pulluid");
+
+      pullbutton.onclick=function(){
+
+        var uid=pulluid.value;
+
+        // alert(uid);
+        $.get("http://202.182.121.73/api/test.php?act=pull&uid="+uid,function(data,status){
+          alert(data);
+
+        })
+        
+      };
     }
   </script>
 </body>
